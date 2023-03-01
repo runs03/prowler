@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: Prowler Service OpenAPI
+  description: |-
+    Prowler service apis.
+  version: 1.0.11
+servers:
+- url: http://localhost:8080/ProwlerService/apis
+tags:
+- name: violations
+  description: All the operations on violations
+- name: application
+  description: Operations on application
+
+paths:
+  /applications:
+    post:
+      summary: Onboard a new application
+      tags:
+      - application
+      description: Create a new Application
+      operationId: createApplication
+      requestBody:
+        description: Create a new application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '405':
+          description: Invalid input
+  /applications/{app-id}:
+    get:
+      tags:
+      - application
+      summary: Find Application by ID
+      description: Returns a single office
+      operationId: getApplication
+      parameters:
+      - name: app-id
+        in: path
+        description: ID of application to return
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Application not found
+        '405':
+          description: Validation exception
+  /applications/{app-id}/violations:
+    post:
+      tags:
+      - violations
+      summary: Report a new application
+      description: Report a new violation in application
+      operationId: reportViolation
+      parameters:
+      - name: app-id
+        in: path
+        description: ID of application to return
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Create a new application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '405':
+          description: Invalid input
+  /applications/{app-id}/violations/find:
+    get:
+      tags:
+      - violations
+      summary: Finds booking by user and date
+      description: Find all the violations in a duration
+      operationId: findViolations
+      parameters:
+      - name: app-id
+        in: path
+        description: ID of application to return
+        required: true
+        schema:
+          type: string
+      - name: start
+        in: query
+        description: Must use date format yyyy-mm-dd. If the date is not passed then today's date will be selected.
+        required: false
+        schema:
+          type: string
+      - name: end
+        in: query
+        description: Must use date format yyyy-mm-dd. If the date is not passed then today's date will be selected.
+        required: false
+        schema:
+          type: string
+      - name: page_size
+        in: query
+        required: false
+        description: Number of violations in a page
+        schema:
+          type: integer
+      - name: page_token
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FindViolationsResponse'
+        '400':
+          description: Invalid tag value
+
+components:
+  schemas:
+    Application:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Unique application name
+        owner:
+          type: string
+    Violation:
+      type: object
+      properties:
+        violation_id:
+          type: string
+        violation_type:
+          type: string
+          enum:
+          - VIOLATION_TYPE_UNSPECIFIED
+          - FINANCIAL
+          - PERSONAL_IDENTIFIABLE
+        host_name:
+          type: string
+        application_name:
+          type: string
+        redacted_log_line:
+          type: string
+    FindViolationsResponse:
+      type: object
+      properties:
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+        next_page_token:
+          type: string

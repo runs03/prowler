@@ -5,9 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.prowler</groupId>
-  <artifactId>prowler-apis</artifactId>
+  <artifactId>prowler</artifactId>
   <version>1.0</version>
-  <name>ProwlerService</name>
+  <name>Prowler</name>
   <packaging>war</packaging>
 
   <properties>
@@ -61,7 +61,7 @@
   </dependencies>
 
   <build>
-    <finalName>ProwlerService</finalName>
+    <finalName>Prowler</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
