@@ -37,7 +37,6 @@ public final class ProwlerApis {
       .build();
 
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response createApplication() {
     return Response.ok().build();
@@ -51,7 +50,6 @@ public final class ProwlerApis {
   }
 
   @POST
-  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response reportViolation() {
     return Response.ok(V1).build();
