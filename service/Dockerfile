@@ -1,8 +1,4 @@
-version: "3"
-services:
-  prowler-service:
-    build: .
-    environment:
-      CATALINA_OUT: /dev/stdout
-    ports:
-    - "8080:8080"
+FROM tomcat:8-jdk8
+ADD ./target/ProwlerApp.war /usr/local/tomcat/webapps/
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
