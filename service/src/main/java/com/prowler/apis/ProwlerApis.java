@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.prowler.models.Application;
 import com.prowler.models.FindViolationsResponse;
 import com.prowler.models.Violation;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -35,12 +34,12 @@ public final class ProwlerApis {
       .setRedactedLogLine("redacted - log - line -2 *****")
       .setViolationType("FINANCIAL")
       .build();
-
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response createApplication() {
-    return Response.ok().build();
-  }
+  //
+  // @POST
+  // @Produces(MediaType.APPLICATION_JSON)
+  // public Response createApplication() {
+  //   return Response.ok().build();
+  // }
 
   @GET
   @Path("/{app-id}")
@@ -48,12 +47,12 @@ public final class ProwlerApis {
   public Response getApplication(@PathParam("app-id") String appId) {
     return Response.ok(APP).build();
   }
-
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response reportViolation() {
-    return Response.ok(V1).build();
-  }
+  //
+  // @POST
+  // @Produces(MediaType.APPLICATION_JSON)
+  // public Response reportViolation() {
+  //   return Response.ok(V1).build();
+  // }
 
   @GET
   @Path("/{app-id}/violations/find")
