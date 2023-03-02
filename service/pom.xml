@@ -4,10 +4,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.prowler</groupId>
-  <artifactId>prowler</artifactId>
+  <groupId>com.prowler</groupId>
+  <artifactId>prowler-apis</artifactId>
   <version>1.0</version>
-  <name>Prowler</name>
+  <name>ProwlerService</name>
   <packaging>war</packaging>
 
   <properties>
@@ -61,7 +61,7 @@
   </dependencies>
 
   <build>
-    <finalName>Prowler</finalName>
+    <finalName>ProwlerService</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

@@ -3,7 +3,7 @@
           http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
     version="3.0">
 
-  <display-name>Prowler</display-name>
+  <display-name>prowler</display-name>
 
   <servlet>
     <servlet-name>jersey-servlet</servlet-name>
