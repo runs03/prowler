@@ -1,11 +1,11 @@
 package com.prowler.apis;
 
 import com.google.common.collect.ImmutableList;
+import com.prowler.datastore.ProwlerSpannerStore;
 import com.prowler.models.Application;
 import com.prowler.models.FindViolationsResponse;
 import com.prowler.models.Violation;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -15,6 +15,8 @@ import javax.ws.rs.core.Response;
 
 @Path("/applications")
 public final class ProwlerApis {
+
+  private ProwlerSpannerStore spannerStore = new ProwlerSpannerStore();
 
   private static final Application APP = Application.newBuilder()
       .setName("App-1")
@@ -45,6 +47,8 @@ public final class ProwlerApis {
   @Path("/{app-id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getApplication(@PathParam("app-id") String appId) {
+    spannerStore.initialize();
+    spannerStore.read();
     return Response.ok(APP).build();
   }
   //

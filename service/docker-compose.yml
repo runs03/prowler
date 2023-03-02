@@ -1,25 +1,41 @@
 version: "3"
 services:
-  dynamodb-local:
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    image: "amazon/dynamodb-local:latest"
-    container_name: dynamodb-local
+  spanner:
+    image: gcr.io/cloud-spanner-emulator/emulator:latest
     ports:
-    - "8000:8000"
-    volumes:
-    - "./docker/dynamodb:/home/dynamodblocal/data"
-    working_dir: /home/dynamodblocal
+    - "9010:9010"
+    - "9020:9020"
+
+  gcloud-spanner-init:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    environment:
+      PROJECT_ID: "prowler-spanner"
+      SPANNER_EMULATOR_URL: "http://spanner:9020/"
+      INSTANCE_NAME: "prowler-instance"
+      DATABASE_NAME: "prowler-database"
+    command: >
+      bash -c 'gcloud config configurations create emulator &&
+              gcloud config set auth/disable_credentials true &&
+              gcloud config set project $${PROJECT_ID} &&
+              gcloud config set api_endpoint_overrides/spanner $${SPANNER_EMULATOR_URL} &&
+              gcloud config set auth/disable_credentials true &&
+              gcloud spanner instances create $${INSTANCE_NAME} --config=emulator-config --description=Emulator --nodes=1
+              gcloud spanner databases create $${DATABASE_NAME} --instance=$${INSTANCE_NAME}'
+
+  spanner-cli:
+    image: sjdaws/spanner-cli:latest
+    environment:
+      SPANNER_EMULATOR_HOST: "spanner:9010"
+    depends_on:
+    - "gcloud-spanner-init"
+    command: ['sh', '-c', 'echo spanner client.... && tail -f /dev/null']
+
   prowler-app:
     image: "prowler-app:1.0"
     container_name: prowler-app
     environment:
       CATALINA_OUT: /dev/stdout
-      AWS_ACCESS_KEY_ID: 'DUMMYIDEXAMPLE'
-      AWS_SECRET_ACCESS_KEY: 'DUMMYEXAMPLEKEY'
-      REGION: 'eu-west-1'
     ports:
     - "8080:8080"
     depends_on:
-    - "dynamodb-local"
-    links:
-    - "dynamodb-local"
+    - "spanner-cli"
