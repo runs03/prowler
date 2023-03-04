@@ -2,12 +2,14 @@ version: "3"
 services:
   spanner:
     image: gcr.io/cloud-spanner-emulator/emulator:latest
+    container_name: spanner
     ports:
     - "9010:9010"
     - "9020:9020"
 
-  gcloud-spanner-init:
+  spanner-init:
     image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    container_name: spanner-init
     environment:
       PROJECT_ID: "prowler-spanner"
       SPANNER_EMULATOR_URL: "http://spanner:9020/"
@@ -19,15 +21,15 @@ services:
               gcloud config set project $${PROJECT_ID} &&
               gcloud config set api_endpoint_overrides/spanner $${SPANNER_EMULATOR_URL} &&
               gcloud config set auth/disable_credentials true &&
-              gcloud spanner instances create $${INSTANCE_NAME} --config=emulator-config --description=Emulator --nodes=1
-              gcloud spanner databases create $${DATABASE_NAME} --instance=$${INSTANCE_NAME}'
+              gcloud spanner instances create $${INSTANCE_NAME} --config=emulator --description=Emulator --nodes=1'
 
   spanner-cli:
     image: sjdaws/spanner-cli:latest
+    container_name: spanner-cli
     environment:
       SPANNER_EMULATOR_HOST: "spanner:9010"
     depends_on:
-    - "gcloud-spanner-init"
+    - "spanner-init"
     command: ['sh', '-c', 'echo spanner client.... && tail -f /dev/null']
 
   prowler-app:
@@ -35,6 +37,7 @@ services:
     container_name: prowler-app
     environment:
       CATALINA_OUT: /dev/stdout
+      SPANNER_EMULATOR_HOST: "spanner:9010"
     ports:
     - "8080:8080"
     depends_on:

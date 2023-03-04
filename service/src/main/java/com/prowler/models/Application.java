@@ -9,9 +9,12 @@ public final class Application {
   private final String name;
   private final String owner;
 
-  private Application(String name, String owner) {
+  private final String description;
+
+  private Application(String name, String owner, String description) {
     this.name = name;
     this.owner = owner;
+    this.description = description;
   }
 
   @JsonProperty("name")
@@ -24,6 +27,20 @@ public final class Application {
     return owner;
   }
 
+  @JsonProperty("description")
+  public String getDescription() {
+    return description;
+  }
+
+  @Override
+  public String toString() {
+    return "Application{" +
+        "name='" + name + '\'' +
+        ", owner='" + owner + '\'' +
+        ", description='" + description + '\'' +
+        '}';
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -32,6 +49,7 @@ public final class Application {
   public static class Builder {
     private String name;
     private String owner;
+    private String description;
 
     public Builder setName(String value) {
       this.name = value;
@@ -43,8 +61,13 @@ public final class Application {
       return this;
     }
 
+    public Builder setDescription(String description) {
+      this.description = description;
+      return this;
+    }
+
     public Application build() {
-      return new Application(name, owner);
+      return new Application(name, owner, description);
     }
   }
 }
