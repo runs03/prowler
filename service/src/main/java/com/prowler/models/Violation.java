@@ -71,11 +71,23 @@ public final class Violation {
     return new Builder();
   }
 
+  @Override
+  public String toString() {
+    return "Violation{" +
+        "violationId='" + violationId + '\'' +
+        ", violationType='" + violationType + '\'' +
+        ", hostName='" + hostName + '\'' +
+        ", applicationName='" + applicationName + '\'' +
+        ", redactedLogLine='" + redactedLogLine + '\'' +
+        ", violationTimestamp=" + violationTimestamp +
+        '}';
+  }
+
   @JsonPOJOBuilder(withPrefix = "set")
   public static class Builder {
     private String violationId;
     private String violationType;
-    private String hostName;
+    private String hostname;
     private String applicationName;
     private String redactedLogLine;
     private LocalDateTime violationTimestamp;
@@ -90,8 +102,8 @@ public final class Violation {
       return this;
     }
 
-    public Builder setHostName(String hostName) {
-      this.hostName = hostName;
+    public Builder setHostname(String hostname) {
+      this.hostname = hostname;
       return this;
     }
 
@@ -105,7 +117,8 @@ public final class Violation {
       return this;
     }
 
-    public Builder setViolatiomTimestamp(LocalDateTime violationTimestamp) {
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    public Builder setViolationTimestamp(LocalDateTime violationTimestamp) {
       this.violationTimestamp = violationTimestamp;
       return this;
     }
@@ -115,7 +128,7 @@ public final class Violation {
       return new Violation(
           violationId,
           violationType,
-          hostName,
+          hostname,
           applicationName,
           redactedLogLine,
           violationTimestamp);

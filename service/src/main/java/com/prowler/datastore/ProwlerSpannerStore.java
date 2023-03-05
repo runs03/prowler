@@ -15,7 +15,11 @@ import com.google.cloud.spanner.Struct;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.prowler.models.Application;
+import com.prowler.models.FindViolationsRequest;
 import com.prowler.models.Violation;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,6 +33,11 @@ public class ProwlerSpannerStore {
   private static final String PROJECT_ID = "prowler-spanner";
   private static final String GET_APPLICATION_QUERY  = "SELECT * FROM Applications WHERE ApplicationName = @applicationName";
   private static final String GET_VIOLATION_QUERY  = "SELECT * FROM Violations WHERE ApplicationName = @applicationName AND ViolationId = @violationId";
+
+  private static final String FIND_VIOLATIONS_QUERY = "SELECT * FROM Violations WHERE "
+      + "ApplicationName = @applicationName "
+      + "AND ViolationTimestamp >= @startTimestamp "
+      + "AND ViolationTimestamp <= @endTimestamp ";
 
   private enum ApplicationsColumns {
     APPLICATION_NAME("ApplicationName"),
@@ -148,8 +157,6 @@ public class ProwlerSpannerStore {
     Mutation mutation = Mutation.newInsertBuilder(VIOLATIONS_TABLE_NAME)
         .set(ViolationsColumns.APPLICATION_NAME.getValue())
         .to(violation.getApplicationName())
-        .set(ViolationsColumns.VIOLATION_TIMESTAMP.getValue())
-        .to(Timestamp.MAX_VALUE)
         .set(ViolationsColumns.VIOLATION_ID.getValue())
         .to(violation.getViolationId())
         .set(ViolationsColumns.HOSTNAME.getValue())
@@ -158,6 +165,8 @@ public class ProwlerSpannerStore {
         .to(violation.getViolationType())
         .set(ViolationsColumns.REDACTED_LOG_LINE.getValue())
         .to(violation.getRedactedLogLine())
+        .set(ViolationsColumns.VIOLATION_TIMESTAMP.getValue())
+        .to(toTimestamp(violation.getViolationTimestamp()))
         .build();
     dbClient.write(ImmutableList.of(mutation));
   }
@@ -173,12 +182,16 @@ public class ProwlerSpannerStore {
                 .build())) {
       if (resultSet.next()) {
         Struct record = resultSet.getCurrentRowAsStruct();
+        Timestamp violationTimestamp = record.getTimestamp(ViolationsColumns.VIOLATION_TIMESTAMP.getValue());
+        System.out.println("Violation timestamp read from spanner = " + violationTimestamp);
+
         Violation violation =  Violation.newBuilder()
             .setApplicationName(record.getString(ViolationsColumns.APPLICATION_NAME.getValue()))
             .setViolationId(record.getString(ViolationsColumns.VIOLATION_ID.getValue()))
             .setViolationType(record.getString(ViolationsColumns.VIOLATION_TYPE.getValue()))
             .setRedactedLogLine(record.getString(ViolationsColumns.REDACTED_LOG_LINE.getValue()))
-            .setHostName(record.getString(ViolationsColumns.HOSTNAME.getValue()))
+            .setHostname(record.getString(ViolationsColumns.HOSTNAME.getValue()))
+            .setViolationTimestamp(toLocalDateTime(violationTimestamp))
             .build();
         System.out.println("Found violation : " + violation);
         return violation;
@@ -187,7 +200,46 @@ public class ProwlerSpannerStore {
     return null;
   }
 
-  public static List<Violation> findViolations() {
-    return null;
+  public static List<Violation> findViolations(FindViolationsRequest violationsRequest) {
+    ImmutableList.Builder<Violation> violations = ImmutableList.builder();
+
+    try (ResultSet resultSet =
+        dbClient
+            .singleUse()
+            .executeQuery(Statement.newBuilder(FIND_VIOLATIONS_QUERY)
+                .bind("applicationName").to(violationsRequest.getApplicationName())
+                .bind("startTimestamp").to(toTimestamp(violationsRequest.getStart()))
+                .bind("endTimestamp").to(toTimestamp(violationsRequest.getEnd()))
+                .build())) {
+      while (resultSet.next()) {
+        Violation violation = convertToViolation(resultSet.getCurrentRowAsStruct());
+        System.out.println("Found violation = " + violation);
+        violations.add(violation);
+      }
+    }
+    return violations.build();
+  }
+
+  private static LocalDateTime toLocalDateTime(Timestamp timestamp) {
+    Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+    return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
+  }
+
+  private static Timestamp toTimestamp(LocalDateTime dateTime) {
+    return Timestamp.ofTimeSecondsAndNanos(dateTime.toEpochSecond(ZoneOffset.UTC), 0);
+  }
+
+  private static Violation convertToViolation(Struct record) {
+    Timestamp violationTimestamp = record.getTimestamp(ViolationsColumns.VIOLATION_TIMESTAMP.getValue());
+    System.out.println("Violation timestamp read from spanner = " + violationTimestamp);
+
+    return Violation.newBuilder()
+        .setApplicationName(record.getString(ViolationsColumns.APPLICATION_NAME.getValue()))
+        .setViolationId(record.getString(ViolationsColumns.VIOLATION_ID.getValue()))
+        .setViolationType(record.getString(ViolationsColumns.VIOLATION_TYPE.getValue()))
+        .setRedactedLogLine(record.getString(ViolationsColumns.REDACTED_LOG_LINE.getValue()))
+        .setHostname(record.getString(ViolationsColumns.HOSTNAME.getValue()))
+        .setViolationTimestamp(toLocalDateTime(violationTimestamp))
+        .build();
   }
 }

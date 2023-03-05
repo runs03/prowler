@@ -2,6 +2,7 @@ package com.prowler.apis;
 
 import com.prowler.datastore.ProwlerSpannerStore;
 import com.prowler.models.Application;
+import com.prowler.models.FindViolationsRequest;
 import com.prowler.models.Violation;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -48,8 +49,8 @@ public final class ProwlerApis {
         .setViolationType(violation.getViolationType())
         .setApplicationName(violation.getApplicationName())
         .setRedactedLogLine(violation.getRedactedLogLine())
-        .setHostName(violation.getHostName())
-        .setViolatiomTimestamp(LocalDateTime.now())
+        .setHostname(violation.getHostName())
+        .setViolationTimestamp(violation.getViolationTimestamp())
         .build();
     ProwlerSpannerStore.reportViolation(newViolation);
     return Response.ok(newViolation).build();
@@ -74,7 +75,14 @@ public final class ProwlerApis {
       @QueryParam("end") String end,
       @QueryParam("page_size") Integer pageSize,
       @QueryParam("page_token") String pageToken) {
-    return Response.ok().build();
+    FindViolationsRequest request = FindViolationsRequest.newBuilder()
+        .setStart(start != null ? LocalDateTime.parse(start) : LocalDateTime.now())
+        .setEnd(end != null ? LocalDateTime.parse(end) : LocalDateTime.now())
+        .setPageSize((pageSize == null || pageSize > 10 ) ? 10 : pageSize)
+        .setPageToken(pageToken)
+        .setApplicationName(appId)
+        .build();
+    return Response.ok(ProwlerSpannerStore.findViolations(request)).build();
   }
 }
 
