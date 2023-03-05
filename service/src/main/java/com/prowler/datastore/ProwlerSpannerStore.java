@@ -27,6 +27,8 @@ public class ProwlerSpannerStore {
   private static final String INSTANCE_ID = "prowler-instance";
   private static final String DATABASE_ID = "prowler-database";
   private static final String PROJECT_ID = "prowler-spanner";
+  private static final String GET_APPLICATION_QUERY  = "SELECT * FROM Applications WHERE ApplicationName = @applicationName";
+  private static final String GET_VIOLATION_QUERY  = "SELECT * FROM Violations WHERE ApplicationName = @applicationName AND ViolationId = @violationId";
 
   private enum ApplicationsColumns {
     APPLICATION_NAME("ApplicationName"),
@@ -63,16 +65,6 @@ public class ProwlerSpannerStore {
     }
   }
 
-  private static final Application APP1 = Application.newBuilder()
-      .setDescription("Test application 1")
-      .setOwner("runs@google.com")
-      .setName("App-1")
-      .build();
-  private static final Application APP2 = Application.newBuilder()
-      .setDescription("Test application 2")
-      .setOwner("no-runs@google.com")
-      .setName("App-2")
-      .build();
   private static final String VIOLATIONS_TABLE_DDL = "CREATE TABLE Violations ("
       + "  ApplicationName STRING(256) NOT NULL,"
       + "  ViolationTimestamp TIMESTAMP NOT NULL,"
@@ -80,12 +72,12 @@ public class ProwlerSpannerStore {
       + "  Hostname STRING(256) NOT NULL,"
       + "  ViolationType STRING(64),"
       + "  RedactedLogLine STRING(MAX)"
-      + ") PRIMARY KEY (ApplicationName, ViolationTimestamp DESC, ViolationId);";
+      + ") PRIMARY KEY (ApplicationName, ViolationTimestamp DESC, ViolationId)";
   private static final String APPLICATIONS_TABLE_DDL = "CREATE TABLE Applications ("
       + "  ApplicationName  STRING(256) NOT NULL,"
       + "  Owner STRING(256) NOT NULL,"
       + "  Description STRING(MAX)"
-      + ") PRIMARY KEY (ApplicationName);";
+      + ") PRIMARY KEY (ApplicationName)";
   private static DatabaseClient dbClient;
   private static DatabaseAdminClient dbAdminClient;
   private static DatabaseId prowlerDbId;
@@ -93,8 +85,6 @@ public class ProwlerSpannerStore {
   public static void setup() {
     initializeSpanner();
     createDatabase();
-    createApplication(APP1);
-    createApplication(APP2);
   }
 
   private static void initializeSpanner() {
@@ -123,11 +113,11 @@ public class ProwlerSpannerStore {
 
   public static void createApplication(Application application) {
     Mutation mutation = Mutation.newInsertBuilder(APPLICATIONS_TABLE_NAME)
-        .set("ApplicationName")
+        .set(ApplicationsColumns.APPLICATION_NAME.getValue())
         .to(application.getName())
-        .set("Owner")
+        .set(ApplicationsColumns.OWNER.getValue())
         .to(application.getOwner())
-        .set("Description")
+        .set(ApplicationsColumns.DESCRIPTION.getValue())
         .to(application.getDescription())
         .build();
     dbClient.write(ImmutableList.of(mutation));
@@ -136,16 +126,18 @@ public class ProwlerSpannerStore {
   public static Application getApplication(String applicationName) {
     try (ResultSet resultSet =
         dbClient
-            .singleUse() // Execute a single read or query against Cloud Spanner.
-            .executeQuery(Statement.of("SELECT ApplicationName, Owner, Description FROM Applications"))) {
-      while (resultSet.next()) {
+            .singleUse()
+            .executeQuery(Statement.newBuilder(GET_APPLICATION_QUERY)
+                .bind("applicationName").to(applicationName)
+                .build())) {
+      if (resultSet.next()) {
         Struct record = resultSet.getCurrentRowAsStruct();
         Application application =  Application.newBuilder()
             .setName(record.getString(ApplicationsColumns.APPLICATION_NAME.getValue()))
             .setOwner(record.getString(ApplicationsColumns.OWNER.getValue()))
             .setDescription(record.getString(ApplicationsColumns.DESCRIPTION.getValue()))
             .build();
-        System.out.printf("Found application : " + application);
+        System.out.println("Found application : " + application);
         return application;
       }
     }
@@ -168,6 +160,31 @@ public class ProwlerSpannerStore {
         .to(violation.getRedactedLogLine())
         .build();
     dbClient.write(ImmutableList.of(mutation));
+  }
+
+
+  public static Violation getViolation(String applicationName, String violationId) {
+    try (ResultSet resultSet =
+        dbClient
+            .singleUse()
+            .executeQuery(Statement.newBuilder(GET_VIOLATION_QUERY)
+                .bind("applicationName").to(applicationName)
+                .bind("violationId").to(violationId)
+                .build())) {
+      if (resultSet.next()) {
+        Struct record = resultSet.getCurrentRowAsStruct();
+        Violation violation =  Violation.newBuilder()
+            .setApplicationName(record.getString(ViolationsColumns.APPLICATION_NAME.getValue()))
+            .setViolationId(record.getString(ViolationsColumns.VIOLATION_ID.getValue()))
+            .setViolationType(record.getString(ViolationsColumns.VIOLATION_TYPE.getValue()))
+            .setRedactedLogLine(record.getString(ViolationsColumns.REDACTED_LOG_LINE.getValue()))
+            .setHostName(record.getString(ViolationsColumns.HOSTNAME.getValue()))
+            .build();
+        System.out.println("Found violation : " + violation);
+        return violation;
+      }
+    }
+    return null;
   }
 
   public static List<Violation> findViolations() {

@@ -1,5 +1,6 @@
 package com.prowler.apis;
 
+import com.prowler.datastore.ProwlerSpannerStore;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -12,7 +13,8 @@ public final class DemoApis {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response initialize() {
-    return Response.ok("initialized the prowler application").build();
+    ProwlerSpannerStore.setup();
+    System.out.println("Initialized the prowler application");
+    return Response.ok("Initialization completed successfully").build();
   }
 }
-

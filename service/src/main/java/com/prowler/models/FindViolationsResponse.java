@@ -21,7 +21,7 @@ public final class FindViolationsResponse {
     return violations;
   }
 
-  @JsonProperty("next_page_token")
+  @JsonProperty("nextPageToken")
   public String getNextPageToken() {
     return nextPageToken;
   }

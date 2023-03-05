@@ -3,49 +3,68 @@ package com.prowler.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.prowler.serdes.LocalDateTimeDeserializer;
+import com.prowler.serdes.LocalDateTimeSerializer;
+import java.time.LocalDateTime;
 
-@JsonDeserialize()
+@JsonDeserialize(builder = Violation.Builder.class)
 public final class Violation {
 
+  @JsonProperty("violationId")
   private final String violationId;
+
+  @JsonProperty("violationType")
   private final String violationType;
+
+  @JsonProperty("hostname")
   private final String hostName;
+
+  @JsonProperty("applicationName")
   private final String applicationName;
+
+  @JsonProperty("redactedLogLine")
   private final String redactedLogLine;
+
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonProperty("violationTimestamp")
+  private final LocalDateTime violationTimestamp;
 
   private Violation(String violationId, String violationType, String hostName,
       String applicationName,
-      String redactedLogLine) {
+      String redactedLogLine,
+      LocalDateTime violationTimestamp) {
     this.violationId = violationId;
     this.violationType = violationType;
     this.hostName = hostName;
     this.applicationName = applicationName;
     this.redactedLogLine = redactedLogLine;
+    this.violationTimestamp = violationTimestamp;
   }
 
-  @JsonProperty("violation_id")
   public String getViolationId() {
     return violationId;
   }
 
-  @JsonProperty("violation_type")
   public String getViolationType() {
     return violationType;
   }
 
-  @JsonProperty("hostname")
   public String getHostName() {
     return hostName;
   }
 
-  @JsonProperty("application_name")
   public String getApplicationName() {
     return applicationName;
   }
 
-  @JsonProperty("redacted_log_line")
   public String getRedactedLogLine() {
     return redactedLogLine;
+  }
+
+  public LocalDateTime getViolationTimestamp() {
+    return violationTimestamp;
   }
 
   public static Builder newBuilder() {
@@ -59,6 +78,7 @@ public final class Violation {
     private String hostName;
     private String applicationName;
     private String redactedLogLine;
+    private LocalDateTime violationTimestamp;
 
     public Builder setViolationId(String violationId) {
       this.violationId = violationId;
@@ -85,8 +105,20 @@ public final class Violation {
       return this;
     }
 
+    public Builder setViolatiomTimestamp(LocalDateTime violationTimestamp) {
+      this.violationTimestamp = violationTimestamp;
+      return this;
+    }
+
+
     public Violation build() {
-      return new Violation(violationId, violationType, hostName, applicationName, redactedLogLine);
+      return new Violation(
+          violationId,
+          violationType,
+          hostName,
+          applicationName,
+          redactedLogLine,
+          violationTimestamp);
     }
   }
 
