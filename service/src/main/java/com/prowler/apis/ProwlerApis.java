@@ -4,7 +4,9 @@ import com.prowler.datastore.ProwlerSpannerStore;
 import com.prowler.models.Application;
 import com.prowler.models.FindViolationsRequest;
 import com.prowler.models.Violation;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -76,13 +78,18 @@ public final class ProwlerApis {
       @QueryParam("page_size") Integer pageSize,
       @QueryParam("page_token") String pageToken) {
     FindViolationsRequest request = FindViolationsRequest.newBuilder()
-        .setStart(start != null ? LocalDateTime.parse(start) : LocalDateTime.now())
-        .setEnd(end != null ? LocalDateTime.parse(end) : LocalDateTime.now())
+        .setStart(start != null ? parseDateTime(start) : LocalDateTime.now())
+        .setEnd(end != null ? parseDateTime(end) : LocalDateTime.now())
         .setPageSize((pageSize == null || pageSize > 10 ) ? 10 : pageSize)
         .setPageToken(pageToken)
         .setApplicationName(appId)
         .build();
     return Response.ok(ProwlerSpannerStore.findViolations(request)).build();
+  }
+
+  private static LocalDateTime parseDateTime(String dateString) {
+    Instant instant = Instant.parse(dateString);
+    return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
   }
 }
 

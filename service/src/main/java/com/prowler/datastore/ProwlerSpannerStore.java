@@ -202,7 +202,6 @@ public class ProwlerSpannerStore {
 
   public static List<Violation> findViolations(FindViolationsRequest violationsRequest) {
     ImmutableList.Builder<Violation> violations = ImmutableList.builder();
-
     try (ResultSet resultSet =
         dbClient
             .singleUse()
@@ -210,6 +209,7 @@ public class ProwlerSpannerStore {
                 .bind("applicationName").to(violationsRequest.getApplicationName())
                 .bind("startTimestamp").to(toTimestamp(violationsRequest.getStart()))
                 .bind("endTimestamp").to(toTimestamp(violationsRequest.getEnd()))
+                // Couldn't find pagination support in the spanner emulator
                 .build())) {
       while (resultSet.next()) {
         Violation violation = convertToViolation(resultSet.getCurrentRowAsStruct());
