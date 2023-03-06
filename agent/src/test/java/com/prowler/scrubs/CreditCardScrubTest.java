@@ -1,6 +1,5 @@
 package com.prowler.scrubs;
 
-import com.prowler.scrubs.CreditCardScrub;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

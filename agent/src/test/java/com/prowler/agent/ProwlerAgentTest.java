@@ -12,7 +12,8 @@ public class ProwlerAgentTest {
   private final List<String> logLines = ImmutableList.of(
       "This line contains credit card 1234567890123456",
       "This line contains email runs@abc.com for user runs",
-      "This line contains IP 105.1.1.0 for user runs"
+      "This line contains IP 105.1.1.0 for user runs",
+      "No violation log line"
   );
 
   @Test
