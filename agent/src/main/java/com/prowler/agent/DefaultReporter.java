@@ -4,7 +4,7 @@ import com.prowler.client.ProwlerApiClient;
 import com.prowler.models.Violation;
 import java.time.LocalDateTime;
 
-public class DefaultReporter implements Reporter {
+class DefaultReporter implements Reporter {
   private final ProwlerContext context;
   private final ProwlerApiClient apiClient;
 

@@ -110,3 +110,12 @@ curl -X 'GET' \
   -H 'accept: application/json'
 
 ```
+### 5. Prowler Agent
+ProwlerAgent class defined in ProwlerAgent.java is the entry point for host application. 
+Run tests in ProwlerAgentTest class to test reporting of the violations.
+```
+cd <workspace>/prowler/agent
+
+# Execute tests
+mvn clean install
+```

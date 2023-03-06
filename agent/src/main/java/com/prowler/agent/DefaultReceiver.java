@@ -2,7 +2,7 @@ package com.prowler.agent;
 
 import com.prowler.scrubs.Scrubs;
 
-public class DefaultReceiver implements Receiver {
+class DefaultReceiver implements Receiver {
 
   private final Scrubs scrubs;
 
