@@ -5,32 +5,19 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.prowler</groupId>
-  <artifactId>prowler-apis</artifactId>
+  <artifactId>prowler-models</artifactId>
   <version>1.0</version>
-  <name>ProwlerApp</name>
-  <packaging>war</packaging>
+  <name>ProwlerModels</name>
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!--        <maven.compiler.source>1.8</maven.compiler.source>-->
-    <!--        <maven.compiler.target>1.8</maven.compiler.target>-->
     <jersey2.version>2.19</jersey2.version>
     <jaxrs.version>2.0.1</jaxrs.version>
     <jackson.version>2.14.0</jackson.version>
   </properties>
 
   <dependencies>
-    <!-- JAX-RS -->
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>${jaxrs.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.prowler</groupId>
-      <artifactId>prowler-models</artifactId>
-      <version>1.0</version>
-    </dependency>
     <!-- Jersey 2.19 -->
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
@@ -38,19 +25,9 @@
       <version>${jersey2.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>${jersey2.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>31.1-jre</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -63,34 +40,16 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-spanner</artifactId>
-      <version>6.36.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>31.1-jre</version>
-    </dependency>
   </dependencies>
 
   <build>
-    <finalName>ProwlerApp</finalName>
+    <finalName>ProwlerModels</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId> org.apache.maven.plugins </groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.3.2</version>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
         </configuration>
       </plugin>
     </plugins>
