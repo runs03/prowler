@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.List;
 
-@JsonDeserialize()
+@JsonDeserialize(builder = FindViolationsResponse.Builder.class)
 public final class FindViolationsResponse {
 
   private final List<Violation> violations;
