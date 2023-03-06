@@ -11,6 +11,9 @@ import java.io.IOException;
 public final class ProwlerApiClient {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private static final String CONTENT_TYPE_HEADER = "Content-Type";
+  private static final String ACCEPT_HEADER = "accept";
+  private static final String MEDIA_TYPE_JSON = "application/json";
 
   private static final String endpoint = "http://localhost:8080";
 
@@ -18,10 +21,10 @@ public final class ProwlerApiClient {
     try {
       Request request = new Request.Builder()
           .url(buildUrl(violation))
-          .addHeader("accept", "application/json")
-          .addHeader("Content-Type", "application/json")
+          .addHeader(ACCEPT_HEADER, MEDIA_TYPE_JSON)
+          .addHeader(CONTENT_TYPE_HEADER, MEDIA_TYPE_JSON)
           .post(RequestBody.create(
-              MediaType.parse("application/json"),
+              MediaType.parse(MEDIA_TYPE_JSON),
               objectMapper.writeValueAsBytes(violation)))
           .build();
       Response response = HttpClient.HTTP_CLIENT.getClient().newCall(request).execute();

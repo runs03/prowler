@@ -2,6 +2,7 @@ package com.prowler.client;
 
 import com.prowler.models.Violation;
 import java.time.LocalDateTime;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -10,7 +11,7 @@ import org.junit.runners.JUnit4;
 public class ProwlerApiClientTest {
 
   @Test
-  public void testViolations() {
+  public void testReportViolations() {
     ProwlerApiClient client = new ProwlerApiClient();
     Violation violation = Violation.newBuilder()
         .setViolationType("FINANCIAL")
@@ -21,5 +22,6 @@ public class ProwlerApiClientTest {
         .build();
     Violation createdViolation = client.reportViolation(violation);
     System.out.println("Created Violation : " + createdViolation);
+    Assert.assertNotNull(createdViolation);
   }
 }
